@@ -1,17 +1,33 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import * as serviceWorker from './serviceWorker';
+import { observable, autorun, computed, action } from "mobx";
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+class Todo {
+  @observable todos = [];
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
+  constructor() {
+    autorun(() => {
+      console.log(
+        `剩余任务：${this.uncompletedCount}`,
+        this.todos
+          .filter((todo) => !todo.completed)
+          .map((todo) => todo.title)
+          .join(",")
+      );
+    });
+  }
+  @computed get uncompletedCount() {
+    return this.todos.filter((todo) => !todo.completed).length;
+  }
+  @action addTodo(title) {
+    this.todos.push({
+      title: title,
+      completed: false
+    });
+  }
+  @action doTask() {
+    this.todos.find((todo) => !todo.completed).completed = true;
+  }
+}
+
+let todo = (window.todo = new Todo());
+todo.addTodo("吃饭");
+todo.doTask();
